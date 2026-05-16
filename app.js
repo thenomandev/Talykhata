@@ -59,6 +59,13 @@ window.addEventListener("DOMContentLoaded", async () => {
 
 async function loadDashboard() {
   customers = await getAllCustomers();
+  
+  // প্রতিটা কাস্টমারের ট্রানজেকশনসহ ব্যালেন্স লোড করার প্রমিস লুপ
+  for (let i = 0; i < customers.length; i++) {
+    const txns = await getTransactions(customers[i].id);
+    customers[i].computedBalance = calcBalance(customers[i], txns);
+  }
+  
   renderCustomerList(customers);
   updateSummary();
 }
@@ -72,8 +79,8 @@ function renderCustomerList(list) {
     const div = document.createElement("div");
     div.className = "customer-item";
     
-    const bal = calcBalance(cust);
-    let balText = "৳ ০";
+    const bal = cust.computedBalance || 0;
+    let balText = "৳ ০.০০";
     let balClass = "";
     
     if (bal > 0) {
@@ -105,7 +112,7 @@ function updateSummary() {
   let rec = 0;
   let giv = 0;
   customers.forEach(c => {
-    const b = calcBalance(c);
+    const b = c.computedBalance || 0;
     if (b > 0) rec += b;
     if (b < 0) giv += Math.abs(b);
   });
@@ -120,6 +127,7 @@ function startLiveTimer(cust, txns) {
   function updateTime() {
     let referenceTime = cust.createdAt || Date.now();
     if (txns && txns.length > 0) {
+      // সবচেয়ে লেটেস্ট ট্রানজেকশনের টাইম (যেহেতু সর্ট করা থাকে, প্রথমটাই লেটেস্ট)
       referenceTime = txns[0].createdAt; 
     }
     
@@ -162,7 +170,10 @@ async function openLedger(customer) {
   const txns = await getTransactions(customer.id);
   startLiveTimer(customer, txns);
   
-  const bal = calcBalance(customer);
+  // লাইভ কারেন্ট ব্যালেন্স ক্যালকুলেশন
+  const bal = calcBalance(customer, txns);
+  currentCustomer.computedBalance = bal;
+
   if (bal >= 0) {
     ledgerBalanceLabel.textContent = "পাবো";
     ledgerBalance.textContent = money(bal);
@@ -173,25 +184,25 @@ async function openLedger(customer) {
     ledgerTopBalance.textContent = money(Math.abs(bal));
   }
 
-  // Render Statement Inside Report Section
+  // রিপোর্ট ভিউ এন্ট্রি লিস্ট জেনারেট
   reportTxnList.innerHTML = "";
   let totalGaveSum = 0;
   let totalGotSum = 0;
 
-  // Add Initial Balance Entry Row inside Report if exists
+  // শুরুর ব্যালেন্স রিপোর্টে দেখানোর লজিক
   if (customer.openingBalance && customer.openingBalance !== 0) {
     const row = document.createElement("div");
     row.className = "report-row";
     const opDate = new Date(customer.createdAt || Date.now());
     
-    let gaveVal = "০.০০";
-    let gotVal = "০.০০";
+    let gaveVal = 0;
+    let gotVal = 0;
     if (customer.openingBalance > 0) {
-      gaveVal = money(customer.openingBalance);
-      totalGaveSum += customer.openingBalance;
+      gaveVal = customer.openingBalance;
+      totalGaveSum += gaveVal;
     } else {
-      gotVal = money(Math.abs(customer.openingBalance));
-      totalGotSum += Math.abs(customer.openingBalance);
+      gotVal = Math.abs(customer.openingBalance);
+      totalGotSum += gotVal;
     }
 
     row.innerHTML = `
@@ -200,13 +211,15 @@ async function openLedger(customer) {
         <div class="rep-time">${formatTimeBangla(opDate)}</div>
         <div class="rep-note">শুরুর ব্যালেন্স</div>
       </div>
-      <div class="rep-gave">${customer.openingBalance > 0 ? gaveVal : ""}</div>
-      <div class="rep-got">${customer.openingBalance < 0 ? gotVal : ""}</div>
+      <div class="rep-gave">${gaveVal > 0 ? money(gaveVal) : ""}</div>
+      <div class="rep-got">${gotVal > 0 ? money(gotVal) : ""}</div>
     `;
     reportTxnList.appendChild(row);
   }
 
-  txns.forEach(txn => {
+  // সব ট্রানজেকশন রিপোর্টে সাজানো (ওল্ড থেকে নিউ রেন্ডার করার জন্য রিভার্স লুপ)
+  const reversedTxns = [...txns].reverse();
+  reversedTxns.forEach(txn => {
     const row = document.createElement("div");
     row.className = "report-row";
     const tDate = new Date(txn.createdAt);
@@ -219,13 +232,13 @@ async function openLedger(customer) {
         <div class="rep-date">${formatDateBangle(tDate)}</div>
         <div class="rep-time">${formatTimeBangla(tDate)}</div>
         <div class="rep-note">${txn.note || "লেনদেন"}</div>
-        <div class="rep-tag">পাবো ${money(txn.give > 0 ? txn.give : txn.receive)}</div>
+        <div class="rep-tag">ব্যালেন্স: ৳ ${money(Math.abs(bal))}</div>
       </div>
       <div class="rep-gave">${txn.give > 0 ? money(txn.give) : ""}</div>
       <div class="rep-got">${txn.receive > 0 ? money(txn.receive) : ""}</div>
     `;
     
-    // Double tap to Delete Action Line Loop
+    // ডাবল ক্লিক করে লেনদেন ডিলিট করার রিয়েল অপশন
     row.ondblclick = async () => {
       if (confirm("এই লেনদেনটি ডিলিট করতে চান?")) {
         await deleteTransaction(txn.id);
@@ -259,12 +272,12 @@ document.onclick = () => {
   threeDotMenu.classList.remove("active");
 };
 
-// 1. তাগাদা পাঠাই (Demo Toast)
+// ১. তাগাদা পাঠাই 
 optTagada.onclick = () => {
   alert(`"${currentCustomer.name}" এর মোবাইলে তাগাদা মেসেজ পাঠানো হয়েছে! (ডেমো সিস্টেম)`);
 };
 
-// 2. রিপোর্ট ক্লিক (লেনদেন বিবরণী শো এবং মেইন পেজ হাইড)
+// ২. রিপোর্ট ক্লিক 
 optReport.onclick = () => {
   reportViewContainer.style.display = "flex";
 };
@@ -272,16 +285,16 @@ closeReportBtn.onclick = () => {
   reportViewContainer.style.display = "none";
 };
 
-// 3. এডিট কাস্টমার ক্লিক 
+// ৩. এডিট কাস্টমার ক্লিক 
 optEdit.onclick = () => {
   customerFormTitle.textContent = "গ্রাহক তথ্য এডিট করুন";
   customerName.value = currentCustomer.name;
   customerPhone.value = currentCustomer.phone || "";
-  openingBalContainer.style.display = "none"; // শুরুর ব্যালেন্স এডিট লক করা নিরাপদ
+  openingBalContainer.style.display = "none"; 
   switchScreen(customerFormScreen);
 };
 
-// 4. ডিলিট কাস্টমার ক্লিক
+// ৪. ডিলিট কাস্টমার ক্লিক
 optDelete.onclick = async () => {
   if (confirm(`আপনি কি নিশ্চিতভাবে "${currentCustomer.name}" কে সম্পূর্ণ ডিলিট করতে চান?`)) {
     if (liveInterval) clearInterval(liveInterval);
@@ -324,16 +337,7 @@ saveTxnBtn.onclick = async () => {
   await loadDashboard();
 };
 
-/* NEW CUSTOMER HANDLING SCREEN SAVE ADDER */
-openCustomerModal.onclick = () => {
-  customerFormTitle.textContent = "নতুন গ্রাহক যোগ করুন";
-  customerName.value = "";
-  customerPhone.value = "";
-  customerOpening.value = "";
-  openingBalContainer.style.display = "block";
-  switchScreen(customerFormScreen);
-};
-
+/* NEW CUSTOMER / EDIT CUSTOMER SAVE WORK */
 saveCustomerBtn.onclick = async () => {
   const name = customerName.value.trim();
   const phone = customerPhone.value.trim();
@@ -347,6 +351,7 @@ saveCustomerBtn.onclick = async () => {
   if (customerFormTitle.textContent === "গ্রাহক তথ্য এডিট করুন") {
     currentCustomer.name = name;
     currentCustomer.phone = phone;
+    // IndexedDB-তে ডাটা মডিফাই করার জন্য ফাংশন কল
     await updateCustomer(currentCustomer);
     await openLedger(currentCustomer);
   } else {
@@ -362,6 +367,15 @@ saveCustomerBtn.onclick = async () => {
   }
 
   await loadDashboard();
+};
+
+openCustomerModal.onclick = () => {
+  customerFormTitle.textContent = "নতুন গ্রাহক যোগ করুন";
+  customerName.value = "";
+  customerPhone.value = "";
+  customerOpening.value = "";
+  openingBalContainer.style.display = "block";
+  switchScreen(customerFormScreen);
 };
 
 /* BACK NAVIGATIONS */
@@ -390,8 +404,15 @@ function switchScreen(screen) {
   screen.classList.add("active");
 }
 
-function calcBalance(cust) {
+// ট্রানজেকশন ডাটা রিয়েল ক্যালকুলেট করার নিখুঁত গাণিতিক সূত্র
+function calcBalance(cust, txns) {
   let bal = cust.openingBalance || 0;
+  if (txns) {
+    txns.forEach(t => {
+      bal += (t.give || 0);     // দিলাম = ব্যালেন্স বাড়বে (পাবো)
+      bal -= (t.receive || 0);  // পেলাম = ব্যালেন্স কমবে
+    });
+  }
   return bal; 
 }
 
