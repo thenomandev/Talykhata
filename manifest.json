@@ -1,0 +1,10 @@
+{
+  "name": "তালিখাতা",
+  "short_name": "তালিখাতা",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c8102e",
+  "orientation": "portrait",
+  "icons": []
+}
