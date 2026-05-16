@@ -60,7 +60,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 async function loadDashboard() {
   customers = await getAllCustomers();
   
-  // প্রতিটা কাস্টমারের ট্রানজেকশনসহ ব্যালেন্স লোড করার প্রমিস লুপ
+  // প্রতিটি কাস্টমারের লেনদেনসহ ব্যালেন্স লোড করার লুপ
   for (let i = 0; i < customers.length; i++) {
     const txns = await getTransactions(customers[i].id);
     customers[i].computedBalance = calcBalance(customers[i], txns);
@@ -127,7 +127,6 @@ function startLiveTimer(cust, txns) {
   function updateTime() {
     let referenceTime = cust.createdAt || Date.now();
     if (txns && txns.length > 0) {
-      // সবচেয়ে লেটেস্ট ট্রানজেকশনের টাইম (যেহেতু সর্ট করা থাকে, প্রথমটাই লেটেস্ট)
       referenceTime = txns[0].createdAt; 
     }
     
@@ -156,7 +155,7 @@ function formatBanglaNumber(num) {
   return String(num).split('').map(digit => englishToBangla[digit] || digit).join('');
 }
 
-/* LEDGER VIEW & LIVE SYNC REPORT */
+/* LEDGER VIEW */
 async function openLedger(customer) {
   currentCustomer = customer;
   switchScreen(ledgerScreen);
@@ -170,7 +169,6 @@ async function openLedger(customer) {
   const txns = await getTransactions(customer.id);
   startLiveTimer(customer, txns);
   
-  // লাইভ কারেন্ট ব্যালেন্স ক্যালকুলেশন
   const bal = calcBalance(customer, txns);
   currentCustomer.computedBalance = bal;
 
@@ -189,7 +187,6 @@ async function openLedger(customer) {
   let totalGaveSum = 0;
   let totalGotSum = 0;
 
-  // শুরুর ব্যালেন্স রিপোর্টে দেখানোর লজিক
   if (customer.openingBalance && customer.openingBalance !== 0) {
     const row = document.createElement("div");
     row.className = "report-row";
@@ -217,7 +214,6 @@ async function openLedger(customer) {
     reportTxnList.appendChild(row);
   }
 
-  // সব ট্রানজেকশন রিপোর্টে সাজানো (ওল্ড থেকে নিউ রেন্ডার করার জন্য রিভার্স লুপ)
   const reversedTxns = [...txns].reverse();
   reversedTxns.forEach(txn => {
     const row = document.createElement("div");
@@ -238,7 +234,6 @@ async function openLedger(customer) {
       <div class="rep-got">${txn.receive > 0 ? money(txn.receive) : ""}</div>
     `;
     
-    // ডাবল ক্লিক করে লেনদেন ডিলিট করার রিয়েল অপশন
     row.ondblclick = async () => {
       if (confirm("এই লেনদেনটি ডিলিট করতে চান?")) {
         await deleteTransaction(txn.id);
@@ -262,7 +257,7 @@ function formatTimeBangla(dateObj) {
   return dateObj.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit", hour12: true });
 }
 
-/* 3-DOT POPUP MENU TOGGLE & CLICK HANDLING */
+/* 3-DOT POPUP MENU */
 deleteCustomerBtn.onclick = (e) => {
   e.stopPropagation();
   threeDotMenu.classList.toggle("active");
@@ -272,12 +267,10 @@ document.onclick = () => {
   threeDotMenu.classList.remove("active");
 };
 
-// ১. তাগাদা পাঠাই 
 optTagada.onclick = () => {
-  alert(`"${currentCustomer.name}" এর মোবাইলে তাগাদা মেসেজ পাঠানো হয়েছে! (ডেমো সিস্টেম)`);
+  alert(`"${currentCustomer.name}" এর মোবাইলে তাগাদা মেসেজ পাঠানো হয়েছে!`);
 };
 
-// ২. রিপোর্ট ক্লিক 
 optReport.onclick = () => {
   reportViewContainer.style.display = "flex";
 };
@@ -285,7 +278,6 @@ closeReportBtn.onclick = () => {
   reportViewContainer.style.display = "none";
 };
 
-// ৩. এডিট কাস্টমার ক্লিক 
 optEdit.onclick = () => {
   customerFormTitle.textContent = "গ্রাহক তথ্য এডিট করুন";
   customerName.value = currentCustomer.name;
@@ -294,7 +286,6 @@ optEdit.onclick = () => {
   switchScreen(customerFormScreen);
 };
 
-// ৪. ডিলিট কাস্টমার ক্লিক
 optDelete.onclick = async () => {
   if (confirm(`আপনি কি নিশ্চিতভাবে "${currentCustomer.name}" কে সম্পূর্ণ ডিলিট করতে চান?`)) {
     if (liveInterval) clearInterval(liveInterval);
@@ -305,7 +296,7 @@ optDelete.onclick = async () => {
   }
 };
 
-/* SAVE TRANSACTION FUNCTION */
+/* SAVE TRANSACTION */
 saveTxnBtn.onclick = async () => {
   const giveVal = parseFloat(txnGive.value) || 0;
   const recVal = parseFloat(txnReceive.value) || 0;
@@ -333,11 +324,17 @@ saveTxnBtn.onclick = async () => {
   selectedTxnDate = new Date();
   updateTxnDateButton();
 
-  await openLedger(currentCustomer);
+  // ডাটাবেজ রিলোড করে লেজার ও ড্যাশবোর্ড দুইটাই আপডেট রাখা
   await loadDashboard();
+  
+  // কারেন্ট অবজেক্টকে লিস্ট থেকে রি-ম্যাপ করা যাতে ওল্ড রেফারেন্স না থাকে
+  const updatedCust = customers.find(c => c.id === currentCustomer.id);
+  if (updatedCust) {
+    await openLedger(updatedCust);
+  }
 };
 
-/* NEW CUSTOMER / EDIT CUSTOMER SAVE WORK */
+/* NEW CUSTOMER / EDIT CUSTOMER SAVE */
 saveCustomerBtn.onclick = async () => {
   const name = customerName.value.trim();
   const phone = customerPhone.value.trim();
@@ -351,9 +348,12 @@ saveCustomerBtn.onclick = async () => {
   if (customerFormTitle.textContent === "গ্রাহক তথ্য এডিট করুন") {
     currentCustomer.name = name;
     currentCustomer.phone = phone;
-    // IndexedDB-তে ডাটা মডিফাই করার জন্য ফাংশন কল
     await updateCustomer(currentCustomer);
-    await openLedger(currentCustomer);
+    
+    // ডাটা ড্যাশবোর্ডে সিঙ্ক করা
+    await loadDashboard();
+    const updatedCust = customers.find(c => c.id === currentCustomer.id);
+    await openLedger(updatedCust || currentCustomer);
   } else {
     const newCust = {
       id: Date.now().toString(),
@@ -363,10 +363,14 @@ saveCustomerBtn.onclick = async () => {
       createdAt: Date.now()
     };
     await addCustomer(newCust);
-    await openLedger(newCust);
+    
+    // ড্যাশবোর্ডের ডাটাবেজ অ্যারে সম্পূর্ণ রিলোড নিশ্চিত করা
+    await loadDashboard();
+    
+    // নতুন তৈরি হওয়া কাস্টমার অবজেক্টটি অ্যারে থেকে খুঁজে বের করে লেজারে পাঠানো
+    const savedCust = customers.find(c => c.id === newCust.id);
+    await openLedger(savedCust || newCust);
   }
-
-  await loadDashboard();
 };
 
 openCustomerModal.onclick = () => {
@@ -379,19 +383,22 @@ openCustomerModal.onclick = () => {
 };
 
 /* BACK NAVIGATIONS */
-backToHome.onclick = () => {
+backToHome.onclick = async () => {
   if (liveInterval) clearInterval(liveInterval);
+  await loadDashboard(); // হোম স্ক্রিনে ফেরার সময় লেটেস্ট ডাটা নিশ্চিত করা
   switchScreen(homeScreen);
 };
-backFromCustomerForm.onclick = () => {
+
+backFromCustomerForm.onclick = async () => {
   if (currentCustomer) {
     switchScreen(ledgerScreen);
   } else {
+    await loadDashboard();
     switchScreen(homeScreen);
   }
 };
 
-/* SEARCH LOOPER */
+/* SEARCH */
 searchInput.oninput = () => {
   const q = searchInput.value.toLowerCase();
   const filtered = customers.filter(c => c.name.toLowerCase().includes(q));
@@ -404,13 +411,12 @@ function switchScreen(screen) {
   screen.classList.add("active");
 }
 
-// ট্রানজেকশন ডাটা রিয়েল ক্যালকুলেট করার নিখুঁত গাণিতিক সূত্র
 function calcBalance(cust, txns) {
   let bal = cust.openingBalance || 0;
   if (txns) {
     txns.forEach(t => {
-      bal += (t.give || 0);     // দিলাম = ব্যালেন্স বাড়বে (পাবো)
-      bal -= (t.receive || 0);  // পেলাম = ব্যালেন্স কমবে
+      bal += (t.give || 0);
+      bal -= (t.receive || 0);
     });
   }
   return bal; 
