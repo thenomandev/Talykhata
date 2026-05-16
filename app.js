@@ -60,7 +60,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 async function loadDashboard() {
   customers = await getAllCustomers();
   
-  // প্রতিটি কাস্টমারের লেনদেনসহ ব্যালেন্স লোড করার লুপ
+  // প্রতিটি কাস্টমারের লেনদেনসহ ব্যালেন্স লোড করা
   for (let i = 0; i < customers.length; i++) {
     const txns = await getTransactions(customers[i].id);
     customers[i].computedBalance = calcBalance(customers[i], txns);
@@ -74,6 +74,11 @@ async function loadDashboard() {
 function renderCustomerList(list) {
   customerList.innerHTML = "";
   customerCount.textContent = list.length;
+
+  if (list.length === 0) {
+    customerList.innerHTML = `<div style="text-align:center; padding: 30px; color: #777;">কোনো গ্রাহক পাওয়া যায়নি</div>`;
+    return;
+  }
 
   list.forEach(cust => {
     const div = document.createElement("div");
@@ -182,7 +187,7 @@ async function openLedger(customer) {
     ledgerTopBalance.textContent = money(Math.abs(bal));
   }
 
-  // রিপোর্ট ভিউ এন্ট্রি লিস্ট জেনারেট
+  // রিপোর্ট তৈরি
   reportTxnList.innerHTML = "";
   let totalGaveSum = 0;
   let totalGotSum = 0;
@@ -258,13 +263,15 @@ function formatTimeBangla(dateObj) {
 }
 
 /* 3-DOT POPUP MENU */
-deleteCustomerBtn.onclick = (e) => {
-  e.stopPropagation();
-  threeDotMenu.classList.toggle("active");
-};
+if (deleteCustomerBtn) {
+  deleteCustomerBtn.onclick = (e) => {
+    e.stopPropagation();
+    threeDotMenu.classList.toggle("active");
+  };
+}
 
 document.onclick = () => {
-  threeDotMenu.classList.remove("active");
+  if (threeDotMenu) threeDotMenu.classList.remove("active");
 };
 
 optTagada.onclick = () => {
@@ -324,24 +331,23 @@ saveTxnBtn.onclick = async () => {
   selectedTxnDate = new Date();
   updateTxnDateButton();
 
-  // ডাটাবেজ রিলোড করে লেজার ও ড্যাশবোর্ড দুইটাই আপডেট রাখা
   await loadDashboard();
-  
-  // কারেন্ট অবজেক্টকে লিস্ট থেকে রি-ম্যাপ করা যাতে ওল্ড রেফারেন্স না থাকে
   const updatedCust = customers.find(c => c.id === currentCustomer.id);
   if (updatedCust) {
     await openLedger(updatedCust);
   }
 };
 
-/* NEW CUSTOMER / EDIT CUSTOMER SAVE */
-saveCustomerBtn.onclick = async () => {
+/* NEW CUSTOMER / EDIT CUSTOMER SAVE (FIXED) */
+saveCustomerBtn.onclick = async (e) => {
+  e.preventDefault(); // ফরমের ডিফল্ট সাবমিট বিহেভিয়ার বন্ধ করা
+  
   const name = customerName.value.trim();
   const phone = customerPhone.value.trim();
   const opening = parseFloat(customerOpening.value) || 0;
 
   if (!name) {
-    alert("নাম আবশ্যক!");
+    alert("অনুগ্রহ করে গ্রাহকের নাম লিখুন!");
     return;
   }
 
@@ -350,7 +356,6 @@ saveCustomerBtn.onclick = async () => {
     currentCustomer.phone = phone;
     await updateCustomer(currentCustomer);
     
-    // ডাটা ড্যাশবোর্ডে সিঙ্ক করা
     await loadDashboard();
     const updatedCust = customers.find(c => c.id === currentCustomer.id);
     await openLedger(updatedCust || currentCustomer);
@@ -362,12 +367,16 @@ saveCustomerBtn.onclick = async () => {
       openingBalance: opening,
       createdAt: Date.now()
     };
-    await addCustomer(newCust);
     
-    // ড্যাশবোর্ডের ডাটাবেজ অ্যারে সম্পূর্ণ রিলোড নিশ্চিত করা
+    await addCustomer(newCust);
     await loadDashboard();
     
-    // নতুন তৈরি হওয়া কাস্টমার অবজেক্টটি অ্যারে থেকে খুঁজে বের করে লেজারে পাঠানো
+    // ফর্ম ইনপুট ক্লিয়ার করা
+    customerName.value = "";
+    customerPhone.value = "";
+    customerOpening.value = "";
+    
+    // নতুন কাস্টমার এন্ট্রি শেষে তাকে সরাসরি লেজার স্ক্রিনে ওপেন করা
     const savedCust = customers.find(c => c.id === newCust.id);
     await openLedger(savedCust || newCust);
   }
@@ -385,7 +394,7 @@ openCustomerModal.onclick = () => {
 /* BACK NAVIGATIONS */
 backToHome.onclick = async () => {
   if (liveInterval) clearInterval(liveInterval);
-  await loadDashboard(); // হোম স্ক্রিনে ফেরার সময় লেটেস্ট ডাটা নিশ্চিত করা
+  await loadDashboard();
   switchScreen(homeScreen);
 };
 
@@ -427,17 +436,23 @@ function money(v) {
 }
 
 function updateTxnDateButton() {
-  txnDateBtn.textContent = "📅 " + selectedTxnDate.toLocaleDateString("bn-BD", { day: "numeric", month: "short" });
+  if (txnDateBtn) {
+    txnDateBtn.textContent = "📅 " + selectedTxnDate.toLocaleDateString("bn-BD", { day: "numeric", month: "short" });
+  }
 }
 
-txnDateBtn.onclick = () => {
-  txnDate.value = selectedTxnDate.toISOString().split("T")[0];
-  if (txnDate.showPicker) txnDate.showPicker();
-};
+if (txnDateBtn) {
+  txnDateBtn.onclick = () => {
+    txnDate.value = selectedTxnDate.toISOString().split("T")[0];
+    if (txnDate.showPicker) txnDate.showPicker();
+  };
+}
 
-txnDate.onchange = () => {
-  if (txnDate.value) {
-    selectedTxnDate = new Date(txnDate.value);
-    updateTxnDateButton();
-  }
-};
+if (txnDate) {
+  txnDate.onchange = () => {
+    if (txnDate.value) {
+      selectedTxnDate = new Date(txnDate.value);
+      updateTxnDateButton();
+    }
+  };
+}
