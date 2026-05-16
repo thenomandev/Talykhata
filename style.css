@@ -335,9 +335,7 @@ input,textarea{
 }
 
 .form-wrap input,
-.form-wrap textarea,
-.transaction-form input,
-.transaction-form textarea{
+.form-wrap textarea{
   background:#fff;
   padding:18px;
   border:2px solid #ddd;
