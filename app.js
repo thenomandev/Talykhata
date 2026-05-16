@@ -89,11 +89,11 @@ function renderCustomerList(list) {
     let balClass = "";
     
     if (bal > 0) {
-  balText = `পাবো ৳ ${money(bal)}`;
-  balClass = "receive";
+  balText = `পাবো <span class="receive">৳ ${money(bal)}</span>`;
+  balClass = "";
 } else if (bal < 0) {
-  balText = `দেবো ৳ ${money(Math.abs(bal))}`;
-  balClass = "give";
+  balText = `দেবো <span class="give">৳ ${money(Math.abs(bal))}</span>`;
+  balClass = "";
 }
 
     div.innerHTML = `
@@ -476,7 +476,11 @@ function calcBalance(cust, txns) {
 function money(v) {
   let parsed = parseFloat(v);
   if (isNaN(parsed)) return "০.০০";
-  return parsed.toFixed(2);
+
+  return parsed.toLocaleString("bn-BD", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 }
 
 function updateTxnDateButton() {
