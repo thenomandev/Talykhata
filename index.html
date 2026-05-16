@@ -1,153 +1,182 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
   <title>তালিখাতা</title>
-  <meta name="theme-color" content="#c8102e">
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
+
+  <meta name="theme-color" content="#c8102e" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<div id="app">
+  <!-- APP -->
+  <div id="app">
 
-  <!-- HOME -->
-  <section id="homeScreen" class="screen active">
+    <!-- HOME SCREEN -->
+    <section id="homeScreen" class="screen active">
 
-    <header class="topbar red">
-      <div class="topbar-row">
-        <button class="account-btn">
-          <span>আমার ব্যবসা</span>
-          <span>▼</span>
-        </button>
+      <!-- TOP BAR -->
+      <header class="topbar red">
+        <div class="topbar-row">
+          <button class="account-btn">
+            <span>M H Noman Khan</span>
+            <span>▼</span>
+          </button>
 
-        <div class="top-icons">
-          <button title="Settings">⚙</button>
+          <div class="top-icons">
+            <button>✉</button>
+            <button>💬</button>
+          </div>
         </div>
-      </div>
 
-      <div class="dashboard-title">ড্যাশবোর্ড</div>
-    </header>
+        <div class="dashboard-title">ড্যাশবোর্ড</div>
+      </header>
 
-    <section class="summary-box">
-      <div>
-        <h3 id="totalReceive">০</h3>
-        <p>মোট পাবো</p>
-      </div>
+      <!-- GOLD CARD -->
+      <section class="gold-card">
+        <div class="gold-left">👑</div>
+        <div class="gold-center">
+          <div>তালিখাতা লেনদেন অবশিষ্ট: ৪ টি</div>
+          <div>গোল্ড কিনুন</div>
+        </div>
+        <div class="gold-right">➜</div>
+      </section>
 
-      <div class="divider"></div>
+      <!-- QUICK ACTION -->
+      <section class="quick-grid">
+        <button>মাল্টি ব্যবসা</button>
+        <button>স্টক হিসাব</button>
+        <button>ব্যবসার নোট</button>
+        <button>গ্রুপ তাগাদা</button>
+        <button>QR কোড</button>
+        <button>ডাটা ব্যাকআপ</button>
+        <button>টালি-মেসেজ</button>
+        <button>ক্যাশবুক</button>
+      </section>
 
-      <div>
-        <h3 id="totalGive">০</h3>
-        <p>মোট দেবো</p>
-      </div>
-    </section>
+      <!-- SUMMARY -->
+      <section class="summary-box">
+        <div>
+          <h3 id="totalReceive">০</h3>
+          <p>মোট পাবো</p>
+        </div>
 
-    <section class="search-row">
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="কাস্টমার খুঁজুন"
-      >
-    </section>
-
-    <section class="customer-meta">
-      <span>কাস্টমার <span id="customerCount">০</span></span>
-      <span class="meta-right">পাবো / দেবো</span>
-    </section>
-
-    <section id="customerList" class="customer-list"></section>
-
-    <button id="openCustomerModal" class="fab">＋</button>
-
-    <nav class="bottom-nav">
-      <button class="active">হিসাব</button>
-      <button>রিপোর্ট</button>
-      <button>ব্যাকআপ</button>
-      <button>মেনু</button>
-    </nav>
-
-  </section>
-
-
-  <!-- ADD CUSTOMER -->
-  <section id="customerFormScreen" class="screen">
-
-    <header class="simple-header">
-      <button id="backFromCustomerForm">←</button>
-      <h2>নতুন কাস্টমার</h2>
-    </header>
-
-    <div class="form-wrap">
-      <input id="customerName" type="text" placeholder="নাম">
-      <input id="customerPhone" type="text" placeholder="মোবাইল নম্বর">
-      <input id="customerOpening" type="number" placeholder="আগের বাকি">
-
-      <button id="saveCustomerBtn" class="primary-btn">
-        সেভ করুন
-      </button>
-    </div>
-
-  </section>
-
-
-  <!-- LEDGER -->
-  <section id="ledgerScreen" class="screen">
-
-    <header class="simple-header">
-      <button id="backToHome">←</button>
-
-      <div class="ledger-user">
-        <div id="ledgerAvatar" class="avatar">A</div>
+        <div class="divider"></div>
 
         <div>
-          <h2 id="ledgerName">Customer</h2>
-          <small>
-            বর্তমান বাকি:
-            <span id="ledgerBalance">০</span>
-          </small>
+          <h3 id="totalGive">০</h3>
+          <p>মোট দেবো</p>
         </div>
+      </section>
+
+      <!-- SEARCH -->
+      <section class="search-row">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="খোঁজ"
+        />
+
+        <button class="round-btn">⚙</button>
+        <button class="round-btn">⬇</button>
+      </section>
+
+      <!-- CUSTOMER HEADER -->
+      <section class="customer-meta">
+        <span>কাস্টমার <span id="customerCount">০</span></span>
+        <span class="meta-right">পাবো / দেবো</span>
+      </section>
+
+      <!-- CUSTOMER LIST -->
+      <section id="customerList" class="customer-list"></section>
+
+      <!-- FLOAT ADD -->
+      <button id="openCustomerModal" class="fab">👤+</button>
+
+      <!-- BOTTOM NAV -->
+      <nav class="bottom-nav">
+        <button class="active">টালি</button>
+        <button>ক্যাশবুক</button>
+        <button>QR স্ক্যান</button>
+        <button>ওয়ালেট</button>
+        <button>মেনু</button>
+      </nav>
+    </section>
+
+
+    <!-- CUSTOMER ADD SCREEN -->
+    <section id="customerFormScreen" class="screen">
+      <header class="simple-header">
+        <button id="backFromCustomerForm">←</button>
+        <h2>নতুন কাস্টমার/সাপ্লায়ার</h2>
+      </header>
+
+      <div class="form-wrap">
+        <div class="customer-type-row">
+          <button class="type-btn active">কাস্টমার</button>
+          <button class="type-btn">সাপ্লায়ার</button>
+        </div>
+
+        <input id="customerName" type="text" placeholder="নাম" />
+        <input id="customerPhone" type="text" placeholder="মোবাইল নম্বর" />
+        <input id="customerOpening" type="number" placeholder="পূর্বের বাকি" />
+
+        <button id="saveCustomerBtn" class="primary-btn">নিশ্চিত</button>
+      </div>
+    </section>
+
+
+    <!-- LEDGER SCREEN -->
+    <section id="ledgerScreen" class="screen">
+      <header class="simple-header">
+        <button id="backToHome">←</button>
+        <div class="ledger-user">
+          <div id="ledgerAvatar" class="avatar">A</div>
+          <div>
+            <h2 id="ledgerName">Customer</h2>
+            <small>
+              পাবো <span id="ledgerBalance">০</span>
+            </small>
+          </div>
+        </div>
+
+        <button id="deleteCustomerBtn">⋮</button>
+      </header>
+
+      <section class="gold-card">
+        <div class="gold-left">👑</div>
+        <div class="gold-center">
+          <div>তালিখাতা লেনদেন অবশিষ্ট: ৫ টি</div>
+          <div>গোল্ড কিনুন</div>
+        </div>
+        <div class="gold-right">➜</div>
+      </section>
+
+      <div class="ledger-top-balance">
+        পাবো <span id="ledgerTopBalance">০</span>
       </div>
 
-      <button id="deleteCustomerBtn">🗑</button>
-    </header>
+      <div class="transaction-form">
+        <input id="txnGive" type="number" placeholder="দিলাম/বেচা" />
+        <input id="txnReceive" type="number" placeholder="পেলাম" />
+        <textarea id="txnNote" placeholder="বিবরণ"></textarea>
 
-    <div class="ledger-top-balance">
-      বাকি: <span id="ledgerTopBalance">০</span>
-    </div>
+        <button id="saveTxnBtn" class="primary-btn">
+          নিশ্চিত
+        </button>
+      </div>
 
-    <div class="transaction-form">
-      <input
-        id="txnGive"
-        type="number"
-        placeholder="দিলাম / বেচা"
-      >
+      <div id="transactionList" class="transaction-list"></div>
+    </section>
 
-      <input
-        id="txnReceive"
-        type="number"
-        placeholder="পেলাম"
-      >
+  </div>
 
-      <textarea
-        id="txnNote"
-        placeholder="বিবরণ"
-      ></textarea>
-
-      <button id="saveTxnBtn" class="primary-btn">
-        লেনদেন সেভ করুন
-      </button>
-    </div>
-
-    <div id="transactionList" class="transaction-list"></div>
-
-  </section>
-
-</div>
-
-<script src="db.js"></script>
-<script src="app.js"></script>
-
+  <script src="db.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
