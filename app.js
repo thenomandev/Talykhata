@@ -89,12 +89,12 @@ function renderCustomerList(list) {
     let balClass = "";
     
     if (bal > 0) {
-      balText = `পাবো ৳ ${money(bal)}`;
-      balClass = "receive";
-    } else if (bal < 0) {
-      balText = `দেবো ৳ ${money(Math.abs(bal))}`;
-      balClass = "give";
-    }
+  balText = `পাবো ৳ ${money(bal)}`;
+  balClass = "give";
+} else if (bal < 0) {
+  balText = `দেবো ৳ ${money(Math.abs(bal))}`;
+  balClass = "receive";
+}
 
     div.innerHTML = `
       <div class="cust-left">
@@ -180,14 +180,16 @@ async function openLedger(customer) {
   currentCustomer.computedBalance = bal;
 
   if (bal >= 0) {
-    if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "পাবো";
-    ledgerBalance.textContent = money(bal);
-    ledgerTopBalance.textContent = money(bal);
-  } else {
-    if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "দেবো";
-    ledgerBalance.textContent = money(Math.abs(bal));
-    ledgerTopBalance.textContent = money(Math.abs(bal));
-  }
+  if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "পাবো";
+  ledgerBalance.textContent = money(bal);
+  ledgerTopBalance.textContent = money(bal);
+  ledgerBalance.style.color = "#c62828";
+} else {
+  if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "দেবো";
+  ledgerBalance.textContent = money(Math.abs(bal));
+  ledgerTopBalance.textContent = money(Math.abs(bal));
+  ledgerBalance.style.color = "#118a4d";
+}
 
   // Transaction History List Render
   const transactionList = document.getElementById("transactionList");
