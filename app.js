@@ -90,10 +90,10 @@ function renderCustomerList(list) {
     
     if (bal > 0) {
   balText = `পাবো ৳ ${money(bal)}`;
-  balClass = "give";
+  balClass = "receive";
 } else if (bal < 0) {
   balText = `দেবো ৳ ${money(Math.abs(bal))}`;
-  balClass = "receive";
+  balClass = "give";
 }
 
     div.innerHTML = `
