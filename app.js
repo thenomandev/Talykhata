@@ -462,13 +462,15 @@ function switchScreen(screen) {
 
 function calcBalance(cust, txns) {
   let bal = cust.openingBalance || 0;
+
   if (txns && txns.length > 0) {
     txns.forEach(t => {
-      bal += (t.give || 0);
-      bal -= (t.receive || 0);
+      bal -= (t.give || 0);
+      bal += (t.receive || 0);
     });
   }
-  return bal; 
+
+  return bal;
 }
 
 function money(v) {
