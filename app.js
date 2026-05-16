@@ -183,7 +183,7 @@ async function openLedger(customer) {
   if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "পাবো";
   ledgerBalance.innerHTML = `৳ ${money(bal)}`;
   ledgerTopBalance.innerHTML = `৳ ${money(bal)}`;
-  ledgerBalance.style.color = "#c62828";
+  ledgerBalance.style.color = "#b51e23";
 } else {
   if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "দেবো";
   ledgerBalance.innerHTML = `৳ ${money(Math.abs(bal))}`;
