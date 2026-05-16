@@ -59,7 +59,7 @@ window.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function loadDashboard() {
-  customers = await getAllCustomers();
+  customers = await getCustomers();
   
   for (let i = 0; i < customers.length; i++) {
     const txns = await getTransactions(customers[i].id);
