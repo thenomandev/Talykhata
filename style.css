@@ -487,3 +487,191 @@ input,textarea{
   color:#6d6d6d;
   font-weight:600;
 }
+
+/* --- Same to Same Ledger Entry Custom Updates --- */
+
+/* Font Awesome Integration Linkage Handling */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+
+#ledgerScreen * {
+  font-family: 'Noto Sans Bengali', sans-serif !important;
+}
+
+#ledgerScreen .simple-header {
+  background: #ffffff;
+  padding: 12px 15px;
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#ledgerScreen .back-btn, #ledgerScreen .more-btn {
+  font-size: 20px;
+  color: #333;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+#ledgerScreen .avatar {
+  width: 44px;
+  height: 44px;
+  background-color: #005691;
+  color: white;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#ledgerScreen .ledger-user {
+  gap: 15px;
+}
+
+#ledgerScreen #ledgerName {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f5f5f5;
+  background: #fff;
+}
+
+.status-left {
+  color: #c62828;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.status-right {
+  color: #757575;
+  font-size: 13px;
+}
+
+/* Form Tuning */
+#ledgerScreen .transaction-form {
+  padding: 25px 15px;
+  background: #fff;
+}
+
+#ledgerScreen .txn-row {
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+#ledgerScreen .txn-box {
+  position: relative;
+  border: 1px solid #cfd8dc !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  min-height: auto !important;
+  display: flex;
+  align-items: center;
+  background: #fff;
+}
+
+#ledgerScreen .taka-icon {
+  position: absolute;
+  left: 15px;
+  color: #424242;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+#ledgerScreen .txn-box input {
+  padding: 14px 15px 14px 38px !important;
+  font-size: 16px !important;
+  color: #212121 !important;
+  font-weight: 500 !important;
+}
+
+#ledgerScreen .txn-box input::placeholder {
+  color: #b0bec5;
+  font-weight: 400;
+}
+
+/* Description Field */
+#ledgerScreen .txn-note-box {
+  position: relative;
+  border: 1px solid #cfd8dc !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  margin-bottom: 25px !important;
+  min-height: auto !important;
+  display: flex;
+  align-items: center;
+  background: #fff;
+}
+
+.desc-icon {
+  position: absolute;
+  left: 15px;
+  color: #616161;
+  font-size: 16px;
+}
+
+#ledgerScreen .txn-note-box input {
+  padding: 14px 15px 14px 45px !important;
+  font-size: 16px !important;
+  color: #212121 !important;
+  border: none;
+  outline: none;
+}
+
+#ledgerScreen .txn-note-box input::placeholder {
+  color: #b0bec5;
+  font-weight: 400;
+}
+
+/* Actions Row (Pills) */
+#ledgerScreen .txn-action-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+#ledgerScreen .date-pill, #ledgerScreen .photo-pill {
+  width: auto !important;
+  height: auto !important;
+  background-color: #f1f3f4 !important;
+  padding: 10px 18px !important;
+  border-radius: 20px !important;
+  font-size: 14px !important;
+  color: #5f6368 !important;
+  font-weight: 600 !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Confirm Button Footer Styling */
+#ledgerScreen .footer-container {
+  padding: 15px 0;
+  background-color: #ffffff;
+}
+
+#ledgerScreen .primary-btn {
+  width: 100% !important;
+  background-color: #f8dadc !important; /* স্ক্রিনশটের ডিজেবলড লাইট থিম */
+  color: #ffffff !important;
+  border: none !important;
+  padding: 14px !important;
+  border-radius: 28px !important; /* সম্পূর্ণ ক্যাপসুল রাউন্ডেড বাটন */
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+  cursor: pointer;
+}
+
+/* ইনপুটে ভ্যালু থাকলে বাটনের ব্যাকগ্রাউন্ড হাইলাইট হওয়ার জন্য (ঐচ্ছিক অ্যাক্টিভ স্টেট) */
+#ledgerScreen .primary-btn.active-state {
+  background-color: #c8102e !important;
+}

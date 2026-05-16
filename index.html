@@ -122,59 +122,57 @@
 
 
     <!-- LEDGER SCREEN -->
-    <section id="ledgerScreen" class="screen">
+            <section id="ledgerScreen" class="screen">
       <header class="simple-header">
-        <button id="backToHome">←</button>
+        <button id="backToHome" class="back-btn"><i class="fa-solid fa-arrow-left"></i></button>
         <div class="ledger-user">
           <div id="ledgerAvatar" class="avatar">A</div>
-          <div>
+          <div class="user-info">
             <h2 id="ledgerName">Customer</h2>
-            <small>
-              পাবো <span id="ledgerBalance">০</span>
-            </small>
           </div>
         </div>
-
-        <button id="deleteCustomerBtn">⋮</button>
+        <button id="deleteCustomerBtn" class="more-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
       </header>
 
-      <div class="ledger-top-balance">
-        পাবো <span id="ledgerTopBalance">০</span>
+      <div class="status-bar">
+        <div class="status-left">পাবো ৳ <span id="ledgerBalance">০</span></div>
+        <div class="status-right">(৫৬ মিনিট আগে)</div>
       </div>
 
       <div class="transaction-form">
-
         <div class="txn-row">
           <div class="txn-box">
-            <label>৳ দিলাম/বেচা</label>
-            <input id="txnGive" type="number" />
+            <span class="taka-icon">৳</span>
+            <input id="txnGive" type="number" placeholder="দিলাম/বেচা" />
           </div>
 
           <div class="txn-box">
-            <label>৳ পেলাম</label>
-            <input id="txnReceive" type="number" />
+            <span class="taka-icon">৳</span>
+            <input id="txnReceive" type="number" placeholder="পেলাম" />
           </div>
         </div>
 
         <div class="txn-note-box">
-          <label>📝 বিবরণ</label>
-          <textarea id="txnNote"></textarea>
+          <i class="fa-regular fa-file-lines desc-icon"></i>
+          <input id="txnNote" type="text" placeholder="বিবরণ" />
         </div>
 
         <div class="txn-action-row">
           <button class="date-pill" id="txnDateBtn">📅 আজ</button>
-<input type="date" id="txnDate" hidden>
-          <button class="photo-pill">📷 ছবি</button>
+          <input type="date" id="txnDate" hidden>
+          <button class="photo-pill"><i class="fa-solid fa-camera"></i> ছবি</button>
         </div>
 
-        <button id="saveTxnBtn" class="primary-btn">
-          নিশ্চিত
-        </button>
-
+        <div class="footer-container">
+          <button id="saveTxnBtn" class="primary-btn">নিশ্চিত</button>
+        </div>
       </div>
+
+      <div style="display:none;" id="ledgerTopBalance">০</div>
 
       <div id="transactionList" class="transaction-list"></div>
     </section>
+
 
   </div>
 
