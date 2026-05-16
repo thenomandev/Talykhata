@@ -143,13 +143,34 @@
       </div>
 
       <div class="transaction-form">
-        <input id="txnGive" type="number" placeholder="দিলাম/বেচা" />
-        <input id="txnReceive" type="number" placeholder="পেলাম" />
-        <textarea id="txnNote" placeholder="বিবরণ"></textarea>
+
+        <div class="txn-row">
+          <div class="txn-box">
+            <label>৳ দিলাম/বেচা</label>
+            <input id="txnGive" type="number" />
+          </div>
+
+          <div class="txn-box">
+            <label>৳ পেলাম</label>
+            <input id="txnReceive" type="number" />
+          </div>
+        </div>
+
+        <div class="txn-note-box">
+          <label>📝 বিবরণ</label>
+          <textarea id="txnNote"></textarea>
+        </div>
+
+        <div class="txn-action-row">
+          <button class="date-pill" id="txnDateBtn">📅 আজ</button>
+<input type="date" id="txnDate" hidden>
+          <button class="photo-pill">📷 ছবি</button>
+        </div>
 
         <button id="saveTxnBtn" class="primary-btn">
           নিশ্চিত
         </button>
+
       </div>
 
       <div id="transactionList" class="transaction-list"></div>

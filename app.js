@@ -32,6 +32,10 @@ const txnReceive = document.getElementById("txnReceive");
 const txnNote = document.getElementById("txnNote");
 const saveTxnBtn = document.getElementById("saveTxnBtn");
 const transactionList = document.getElementById("transactionList");
+const txnDateBtn = document.getElementById("txnDateBtn");
+const txnDate = document.getElementById("txnDate");
+
+let selectedTxnDate = new Date();
 
 /* HELPERS */
 function showScreen(screen) {
@@ -182,6 +186,9 @@ async function openLedger(customer) {
   txnReceive.value = "";
   txnNote.value = "";
 
+  selectedTxnDate = new Date();
+  updateTxnDateButton();
+
   showScreen(ledgerScreen);
 }
 
@@ -218,13 +225,13 @@ saveTxnBtn.onclick = async () => {
   const net = give - receive;
 
   const txn = {
-    id: Date.now().toString(),
-    customerId: currentCustomer.id,
-    give,
-    receive,
-    note: txnNote.value.trim(),
-    createdAt: Date.now()
-  };
+  id: Date.now().toString(),
+  customerId: currentCustomer.id,
+  give,
+  receive,
+  note: txnNote.value.trim(),
+  createdAt: selectedTxnDate.getTime()
+};
 
   await addTransaction(txn);
 
@@ -301,6 +308,30 @@ async function loadTransactions() {
   ledgerBalance.textContent = money(Math.abs(bal));
   ledgerTopBalance.textContent = money(Math.abs(bal));
 }
+
+function updateTxnDateButton() {
+  txnDateBtn.textContent =
+    "📅 " +
+    selectedTxnDate.toLocaleDateString("bn-BD", {
+      day: "numeric",
+      month: "short"
+    });
+}
+
+txnDateBtn.onclick = () => {
+  txnDate.value = selectedTxnDate.toISOString().split("T")[0];
+
+  if (txnDate.showPicker) {
+    txnDate.showPicker();
+  } else {
+    txnDate.click();
+  }
+};
+
+txnDate.onchange = () => {
+  selectedTxnDate = new Date(txnDate.value);
+  updateTxnDateButton();
+};
 
 /* INIT */
 loadCustomers();
