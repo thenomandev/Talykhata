@@ -5,7 +5,7 @@ let liveInterval = null;
 
 /* ELEMENTS */
 const homeScreen = document.getElementById("homeScreen");
-const customerFormScreen = document.getElementById("customerFormScreen");
+const customerFormScreen = document.getElementById("customerFormScreen\");
 const ledgerScreen = document.getElementById("ledgerScreen");
 
 const customerList = document.getElementById("customerList");
@@ -29,43 +29,44 @@ const ledgerAvatar = document.getElementById("ledgerAvatar");
 const ledgerName = document.getElementById("ledgerName");
 const ledgerBalance = document.getElementById("ledgerBalance");
 const ledgerBalanceLabel = document.getElementById("ledgerBalanceLabel");
-const ledgerTopBalance = document.getElementById("ledgerTopBalance");
 const deleteCustomerBtn = document.getElementById("deleteCustomerBtn");
-
-const threeDotMenu = document.getElementById("threeDotMenu");
-const optTagada = document.getElementById("optTagada");
-const optReport = document.getElementById("optReport");
-const optEdit = document.getElementById("optEdit");
-const optDelete = document.getElementById("optDelete");
 
 const txnGive = document.getElementById("txnGive");
 const txnReceive = document.getElementById("txnReceive");
 const txnNote = document.getElementById("txnNote");
-const txnDateBtn = document.getElementById("txnDateBtn");
 const txnDate = document.getElementById("txnDate");
+const txnDateBtn = document.getElementById("txnDateBtn");
 const saveTxnBtn = document.getElementById("saveTxnBtn");
 
-const liveTimeCounter = document.querySelector(".status-right"); // index.html line match
+const threeDotMenu = document.getElementById("threeDotMenu");
+const btnViewReport = document.getElementById("btnViewReport");
+const btnEditCustomer = document.getElementById("btnEditCustomer");
 const reportViewContainer = document.getElementById("reportViewContainer");
 const closeReportBtn = document.getElementById("closeReportBtn");
 const reportTxnList = document.getElementById("reportTxnList");
 const reportTotalGave = document.getElementById("reportTotalGave");
 const reportTotalGot = document.getElementById("reportTotalGot");
 
-/* INITIALIZE APP */
-window.addEventListener("DOMContentLoaded", async () => {
+/* INITIAL LOAD */
+document.addEventListener("DOMContentLoaded", async () => {
   await loadDashboard();
   updateTxnDateButton();
+  
+  if (navigator.serviceWorker) {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+  }
 });
 
+/* CORE DASHBOARD LOAD */
 async function loadDashboard() {
-  customers = await getCustomers();
-  
-  for (let i = 0; i < customers.length; i++) {
-    const txns = await getTransactions(customers[i].id);
-    customers[i].computedBalance = calcBalance(customers[i], txns);
+  const all = await getAllCustomers();
+  customers = all;
+
+  for (let c of customers) {
+    const txns = await getTransactions(c.id);
+    c.computedBalance = calcBalance(c, txns);
   }
-  
+
   renderCustomerList(customers);
   updateSummary();
 }
@@ -88,12 +89,14 @@ function renderCustomerList(list) {
     let balText = "৳ ০.০০";
     let balClass = "";
     
+    // অ্যানালিসিস অনুযায়ী ফিক্সড: bal > 0 মানে দিলাম বেশি -> পাবো (লাল)
+    // bal < 0 মানে পেলাম বেশি -> দেবো (সবুজ)
     if (bal > 0) {
       balText = `পাবো ৳ ${money(bal)}`;
-      balClass = "receive";
+      balClass = "give"; 
     } else if (bal < 0) {
       balText = `দেবো ৳ ${money(Math.abs(bal))}`;
-      balClass = "give";
+      balClass = "receive"; 
     }
 
     div.innerHTML = `
@@ -118,48 +121,13 @@ function updateSummary() {
   let giv = 0;
   customers.forEach(c => {
     const b = c.computedBalance || 0;
+    // bal > 0 মানে পাবো (লাল)
     if (b > 0) rec += b;
+    // bal < 0 মানে দেবো (সবুজ)
     if (b < 0) giv += Math.abs(b);
   });
   totalReceive.textContent = `৳ ${money(rec)}`;
   totalGive.textContent = `৳ ${money(giv)}`;
-}
-
-/* LIVE TIME COUNTER LOOP */
-function startLiveTimer(cust, txns) {
-  if (liveInterval) clearInterval(liveInterval);
-  
-  function updateTime() {
-    let referenceTime = cust.createdAt || Date.now();
-    if (txns && txns.length > 0) {
-      referenceTime = txns[0].createdAt; 
-    }
-    
-    const diffMs = Date.now() - referenceTime;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (!liveTimeCounter) return;
-
-    if (diffMins < 1) {
-      liveTimeCounter.textContent = "(এইমাত্র)";
-    } else if (diffMins < 60) {
-      liveTimeCounter.textContent = `(${formatBanglaNumber(diffMins)} মিনিট আগে)`;
-    } else if (diffHours < 24) {
-      liveTimeCounter.textContent = `(${formatBanglaNumber(diffHours)} ঘণ্টা আগে)`;
-    } else {
-      liveTimeCounter.textContent = `(${formatBanglaNumber(diffDays)} দিন আগে)`;
-    }
-  }
-  
-  updateTime();
-  liveInterval = setInterval(updateTime, 30000); 
-}
-
-function formatBanglaNumber(num) {
-  const engToBn = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
-  return String(num).split('').map(d => engToBn[d] || d).join('');
 }
 
 /* LEDGER DETAILS VIEW */
@@ -179,14 +147,25 @@ async function openLedger(customer) {
   const bal = calcBalance(customer, txns);
   currentCustomer.computedBalance = bal;
 
+  const statusBar = document.querySelector(".status-bar");
+
+  // হোম স্ক্রিনের সাথে সেম বিহেভিয়ার কন্ডিশন (পাবো = লাল, দেবো = সবুজ)
   if (bal >= 0) {
-    if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "পাবো";
+    if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "পাবো ৳ ";
     ledgerBalance.textContent = money(bal);
-    ledgerTopBalance.textContent = money(bal);
+    
+    if (statusBar) {
+      statusBar.style.backgroundColor = "#fff5f5"; // হালকা লাল ব্যাকগ্রাউন্ড
+      if (ledgerBalanceLabel) ledgerBalanceLabel.parentElement.style.color = "#c8102e"; // লাল টেক্সট
+    }
   } else {
-    if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "দেবো";
+    if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "দেবো ৳ ";
     ledgerBalance.textContent = money(Math.abs(bal));
-    ledgerTopBalance.textContent = money(Math.abs(bal));
+    
+    if (statusBar) {
+      statusBar.style.backgroundColor = "#f0fdf4"; // হালকা সবুজ ব্যাকগ্রাউন্ড
+      if (ledgerBalanceLabel) ledgerBalanceLabel.parentElement.style.color = "#118a4d"; // সবুজ টেক্সট
+    }
   }
 
   // Transaction History List Render
@@ -198,6 +177,8 @@ async function openLedger(customer) {
       div.className = "transaction-item";
       
       const amount = txn.give > 0 ? txn.give : txn.receive;
+      
+      // দিলাম = লাল (give), পেলাম = সবুজ (receive)
       const cls = txn.give > 0 ? "give" : "receive";
       const label = txn.give > 0 ? "দিলাম" : "পেলাম";
 
@@ -206,7 +187,6 @@ async function openLedger(customer) {
         <div class="txn-amount ${cls}">${label}: ৳ ${money(amount)}</div>
       `;
 
-      // Long press or right click to delete transaction
       div.oncontextmenu = async (e) => {
         e.preventDefault();
         if (confirm("এই লেনদেনটি ডিলিট করতে চান?")) {
@@ -274,15 +254,111 @@ async function openLedger(customer) {
   }
 }
 
-function formatDateBangla(d) {
-  return d.toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric" });
+/* LIVE RELATIVE TIME CLOCK TIMER */
+function startLiveTimer(cust, txns) {
+  if (liveInterval) clearInterval(liveInterval);
+  
+  const rightStatus = document.querySelector(".status-right");
+  if (!rightStatus) return;
+
+  function update() {
+    let lastTime = cust.createdAt || Date.now();
+    if (txns && txns.length > 0) {
+      lastTime = txns[0].createdAt; 
+    }
+    const diffMs = Date.now() - lastTime;
+    const diffMins = Math.floor(diffMs / 60000);
+
+    if (diffMins < 1) {
+      rightStatus.textContent = "(এইমাত্র)";
+    } else if (diffMins < 60) {
+      rightStatus.textContent = `(${numbersToBangla(diffMins)} মিনিট আগে)`;
+    } else {
+      const hours = Math.floor(diffMins / 60);
+      if (hours < 24) {
+        rightStatus.textContent = `(${numbersToBangla(hours)} ঘণ্টা আগে)`;
+      } else {
+        const days = Math.floor(hours / 24);
+        rightStatus.textContent = `(${numbersToBangla(days)} দিন আগে)`;
+      }
+    }
+  }
+
+  update();
+  liveInterval = setInterval(update, 30000);
 }
 
-function formatTimeBangla(d) {
-  return d.toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit", hour12: true });
+/* BANGLA UTILS CONSTANTS & HELPERS */
+function numbersToBangla(num) {
+  const eng = ["0","1","2","3","4","5","6","7","8","9"];
+  const bng = ["০","১","২","৩","৪","৫","৬","৭","৮","৯"];
+  return num.toString().split("").map(char => {
+    const idx = eng.indexOf(char);
+    return idx !== -1 ? bng[idx] : char;
+  }).join("");
 }
 
-/* 3-DOT CONTEXT MENU ACTIONS */
+function formatDateBangla(dateObj) {
+  const months = ["জানু", "ফেব্রু", "মার্চ", "এপ্রিল", "মে", "জুন", "জুলাই", "আগস্ট", "সেপ্টে", "অক্টো", "নভে", "ডিসে"];
+  const day = dateObj.getDate();
+  const monthStr = months[dateObj.getMonth()];
+  const year = dateObj.getFullYear();
+  return `${numbersToBangla(day)} ${monthStr} ${numbersToBangla(year)}`;
+}
+
+function formatTimeBangla(dateObj) {
+  let hours = dateObj.getHours();
+  const minutes = dateObj.getMinutes();
+  const ampm = hours >= 12 ? "পিএম" : "এএম";
+  hours = hours % 12;
+  hours = hours ? hours : 12; 
+  const minStr = minutes < 10 ? "0" + minutes : minutes;
+  return `${numbersToBangla(hours)}:${numbersToBangla(minStr)} ${ampm}`;
+}
+
+/* SAVE TRANSACTION EVENT */
+if (saveTxnBtn) {
+  saveTxnBtn.onclick = async () => {
+    if (!currentCustomer) return;
+    
+    const giveVal = parseFloat(txnGive.value) || 0;
+    const receiveVal = parseFloat(txnReceive.value) || 0;
+    const noteVal = txnNote.value.trim();
+
+    if (giveVal === 0 && receiveVal === 0) {
+      alert("দয়া করে পরিমাণ ইনপুট দিন");
+      return;
+    }
+
+    const tDate = new Date(txnDate.value || selectedTxnDate);
+    tDate.setHours(new Date().getHours());
+    tDate.setMinutes(new Date().getMinutes());
+    tDate.setSeconds(new Date().getSeconds());
+
+    const newTxn = {
+      id: Date.now().toString(),
+      customerId: currentCustomer.id,
+      give: giveVal,
+      receive: receiveVal,
+      note: noteVal,
+      createdAt: tDate.getTime()
+    };
+
+    await addTransaction(newTxn);
+    
+    txnGive.value = "";
+    txnReceive.value = "";
+    txnNote.value = "";
+    selectedTxnDate = new Date();
+    updateTxnDateButton();
+
+    const allTxns = await getTransactions(currentCustomer.id);
+    currentCustomer.computedBalance = calcBalance(currentCustomer, allTxns);
+    openLedger(currentCustomer);
+  };
+}
+
+/* THREE DOT DROPDOWN POPUP CONTROLS */
 if (deleteCustomerBtn) {
   deleteCustomerBtn.onclick = (e) => {
     e.stopPropagation();
@@ -294,104 +370,69 @@ document.addEventListener("click", () => {
   if (threeDotMenu) threeDotMenu.classList.remove("active");
 });
 
-if (optTagada) {
-  optTagada.onclick = () => {
-    alert(`"${currentCustomer.name}" এর মোবাইলে তাগাদা মেসেজ পাঠানো হয়েছে!`);
+if (btnViewReport) {
+  btnViewReport.onclick = () => {
+    if (reportViewContainer) reportViewContainer.style.display = "flex";
+    if (threeDotMenu) threeDotMenu.classList.remove("active");
   };
 }
 
-if (optReport) {
-  optReport.onclick = () => {
-    if (reportViewContainer) reportViewContainer.style.display = "flex";
-  };
-}
 if (closeReportBtn) {
   closeReportBtn.onclick = () => {
     if (reportViewContainer) reportViewContainer.style.display = "none";
   };
 }
 
-if (optEdit) {
-  optEdit.onclick = () => {
-    customerFormTitle.textContent = "গ্রাহক তথ্য এডিট করুন";
+if (btnEditCustomer) {
+  btnEditCustomer.onclick = () => {
+    if (!currentCustomer) return;
+    if (threeDotMenu) threeDotMenu.classList.remove("active");
+
+    if (customerFormTitle) customerFormTitle.textContent = "গ্রাহক তথ্য পরিবর্তন";
+    if (openingBalContainer) openingBalContainer.style.display = "none";
+
     customerName.value = currentCustomer.name;
     customerPhone.value = currentCustomer.phone || "";
-    if (openingBalContainer) openingBalContainer.style.display = "none"; 
+    customerOpening.value = currentCustomer.openingBalance || 0;
+
     switchScreen(customerFormScreen);
   };
 }
 
-if (optDelete) {
-  optDelete.onclick = async () => {
-    if (confirm(`আপনি কি নিশ্চিতভাবে "${currentCustomer.name}" কে সম্পূর্ণ ডিলিট করতে চান?`)) {
-      if (liveInterval) clearInterval(liveInterval);
-      await deleteCustomer(currentCustomer.id);
-      currentCustomer = null;
-      await loadDashboard();
-      switchScreen(homeScreen);
-    }
+/* ADD & EDIT CUSTOMER TRIGGER ACTIONS */
+if (openCustomerModal) {
+  openCustomerModal.onclick = () => {
+    currentCustomer = null;
+    if (customerFormTitle) customerFormTitle.textContent = "নতুন গ্রাহক যোগ করুন";
+    if (openingBalContainer) openingBalContainer.style.display = "block";
+
+    customerName.value = "";
+    customerPhone.value = "";
+    customerOpening.value = "";
+
+    switchScreen(customerFormScreen);
   };
 }
 
-/* SAVE NEW TRANSACTION */
-if (saveTxnBtn) {
-  saveTxnBtn.onclick = async () => {
-    const giveVal = parseFloat(txnGive.value) || 0;
-    const recVal = parseFloat(txnReceive.value) || 0;
-    const noteVal = txnNote.value.trim();
-
-    if (giveVal === 0 && recVal === 0) {
-      alert("অনুগ্রহ করে সঠিক অংক লিখুন!");
-      return;
-    }
-
-    const newTxn = {
-      id: Date.now().toString(),
-      customerId: currentCustomer.id,
-      give: giveVal,
-      receive: recVal,
-      note: noteVal,
-      createdAt: selectedTxnDate.getTime()
-    };
-
-    await addTransaction(newTxn);
-    
-    txnGive.value = "";
-    txnReceive.value = "";
-    txnNote.value = "";
-    selectedTxnDate = new Date();
-    updateTxnDateButton();
-
-    await loadDashboard();
-    const updatedCust = customers.find(c => c.id === currentCustomer.id);
-    if (updatedCust) {
-      await openLedger(updatedCust);
-    }
-  };
-}
-
-/* CUSTOMER ADD & UPDATE HANDLER */
 if (saveCustomerBtn) {
-  saveCustomerBtn.onclick = async (e) => {
-    if (e) e.preventDefault();
-    
+  saveCustomerBtn.onclick = async () => {
     const name = customerName.value.trim();
     const phone = customerPhone.value.trim();
     const opening = parseFloat(customerOpening.value) || 0;
 
     if (!name) {
-      alert("অনুগ্রহ করে গ্রাহকের নাম লিখুন!");
+      alert("গ্রাহকের নাম আবশ্যক");
       return;
     }
 
-    if (customerFormTitle.textContent === "গ্রাহক তথ্য এডিট করুন") {
+    if (currentCustomer) {
       currentCustomer.name = name;
       currentCustomer.phone = phone;
       await updateCustomer(currentCustomer);
       
-      await loadDashboard();
-      const updated = customers.find(c => c.id === currentCustomer.id);
-      await openLedger(updated || currentCustomer);
+      const txns = await getTransactions(currentCustomer.id);
+      currentCustomer.computedBalance = calcBalance(currentCustomer, txns);
+      openLedger(currentCustomer);
     } else {
       const newCust = {
         id: Date.now().toString(),
@@ -400,32 +441,18 @@ if (saveCustomerBtn) {
         openingBalance: opening,
         createdAt: Date.now()
       };
-      
       await addCustomer(newCust);
-      await loadDashboard();
       
-      customerName.value = "";
-      customerPhone.value = "";
-      customerOpening.value = "";
-      
-      const saved = customers.find(c => c.id === newCust.id);
-      await openLedger(saved || newCust);
+      const txns = await getTransactions(newCust.id);
+      newCust.computedBalance = calcBalance(newCust, txns);
+      openLedger(newCust);
     }
+
+    await loadDashboard();
   };
 }
 
-if (openCustomerModal) {
-  openCustomerModal.onclick = () => {
-    customerFormTitle.textContent = "নতুন গ্রাহক যোগ করুন";
-    customerName.value = "";
-    customerPhone.value = "";
-    customerOpening.value = "";
-    if (openingBalContainer) openingBalContainer.style.display = "block";
-    switchScreen(customerFormScreen);
-  };
-}
-
-/* NAVIGATION BACKS */
+/* BACK NAVIGATIONS */
 if (backToHome) {
   backToHome.onclick = async () => {
     if (liveInterval) clearInterval(liveInterval);
@@ -479,14 +506,20 @@ function money(v) {
 
 function updateTxnDateButton() {
   if (txnDateBtn) {
-    txnDateBtn.textContent = "📅 " + selectedTxnDate.toLocaleDateString("bn-BD", { day: "numeric", month: "short" });
+    txnDateBtn.textContent = "📅 " + selectedTxnDate.toLocaleDateString(\"bn-BD\", { day: \"numeric\", month: \"short\" });
   }
 }
 
 if (txnDateBtn) {
   txnDateBtn.onclick = () => {
-    txnDate.value = selectedTxnDate.toISOString().split("T")[0];
-    if (txnDate.showPicker) txnDate.showPicker();
+    if (txnDate) {
+      txnDate.value = selectedTxnDate.toISOString().split("T")[0];
+      if (txnDate.showPicker) {
+        txnDate.showPicker();
+      } else {
+        txnDate.click();
+      }
+    }
   };
 }
 
