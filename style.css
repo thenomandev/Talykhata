@@ -314,9 +314,9 @@ input, textarea {
 }
 
 .status-left {
-  color:#c62828;
-  font-weight:700;
-  font-size:14px;
+  color:#666;
+  font-weight:400;
+  font-size:12px;
 }
 
 .status-right {
