@@ -412,16 +412,21 @@ input,textarea{
 .txn-box{
   flex:1;
   background:#fff;
-  border:2px solid #8d8d8d;
-  border-radius:16px;
-  padding:12px 16px;
+  border:2px solid #bfc7ce;
+  border-radius:18px;
+  padding:10px 16px 14px;
+  min-height:88px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
 }
 
 .txn-box label{
   display:block;
-  font-size:14px;
-  color:#8a8a8a;
-  margin-bottom:8px;
+  font-size:13px;
+  color:#a1a1a1;
+  margin-bottom:10px;
+  font-weight:600;
 }
 
 .txn-box input{
@@ -430,24 +435,27 @@ input,textarea{
   background:transparent !important;
   padding:0 !important;
   margin:0 !important;
-  font-size:28px;
-  font-weight:700;
+  font-size:20px;
+  font-weight:600;
   outline:none;
+  color:#222;
 }
 
 .txn-note-box{
   background:#fff;
-  border:2px solid #8d8d8d;
-  border-radius:16px;
-  padding:12px 16px;
+  border:2px solid #bfc7ce;
+  border-radius:18px;
+  padding:10px 16px 14px;
   margin-bottom:18px;
+  min-height:96px;
 }
 
 .txn-note-box label{
   display:block;
-  font-size:14px;
-  color:#8a8a8a;
-  margin-bottom:8px;
+  font-size:13px;
+  color:#a1a1a1;
+  margin-bottom:10px;
+  font-weight:600;
 }
 
 .txn-note-box textarea{
@@ -457,9 +465,10 @@ input,textarea{
   padding:0 !important;
   margin:0 !important;
   resize:none;
-  height:42px;
+  height:46px;
   font-size:20px;
   outline:none;
+  color:#222;
 }
 
 .txn-action-row{
