@@ -181,12 +181,12 @@ async function openLedger(customer) {
 
   if (bal >= 0) {
   if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "পাবো";
-  ledgerBalance.textContent = money(bal);
+  ledgerBalance.innerHTML = `৳ ${money(bal)}`;
   ledgerTopBalance.innerHTML = `৳ ${money(bal)}`;
   ledgerBalance.style.color = "#b51e23";
 } else {
   if (ledgerBalanceLabel) ledgerBalanceLabel.textContent = "দেবো";
-  ledgerBalance.textContent = money(Math.abs(bal));
+  ledgerBalance.innerHTML = `৳ ${money(Math.abs(bal))}`;
   ledgerTopBalance.innerHTML = `৳ ${money(Math.abs(bal))}`;
   ledgerBalance.style.color = "#118a4d";
 }
